@@ -1,7 +1,7 @@
 interface=usb0
 bind-interfaces
 no-hosts
-dhcp-option=3
+dhcp-option=option:router
 log-dhcp
 expand-hosts
 dhcp-range=interface:usb0,{{ usb0_interface_dhcp_start }},{{ usb0_interface_dhcp_end }},2h
