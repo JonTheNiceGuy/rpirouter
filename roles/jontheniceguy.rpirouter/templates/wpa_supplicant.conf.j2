@@ -1,0 +1,20 @@
+ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country={{ wifi_country }}
+{% for network in wifi | dict2items %}
+
+network={
+      ssid="{{ network.key }}"
+{% if network.value.psk | default('') | string | length > 0 %}
+      psk="{{ network.value.psk }}"
+{% else %}
+      key_mgmt=NONE
+{% endif %}
+{% if network.value.id | default('') | string | length > 0 %}
+      id_str="{{ network.value.id }}"
+{% endif %}
+{% if network.value.priority | default('') | string | length > 0 %}
+      priority={{ network.value.priority }}
+{% endif %}
+}
+{% endfor %}

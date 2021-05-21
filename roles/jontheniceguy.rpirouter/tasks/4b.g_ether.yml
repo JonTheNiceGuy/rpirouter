@@ -1,0 +1,14 @@
+---
+# MAC addresses are derived from RFC7042 "Documentation" ranges.
+- name: Setup Config File for g_ether and dwc2
+  lineinfile:
+    regexp: "^(.*)rootwait quiet(.*).*$"
+    line: '\1rootwait modules-load=dwc2,g_ether g_ether.host_addr=00:00:5e:00:53:01 g_ether.dev_addr=00:00:5e:00:53:02 quiet\2'
+    backrefs: yes
+    path: "{{ item.key }}/cmdline.txt"
+  loop: "{{ boot_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- debug:
+    msg: If you are using g_ether, you MUST have an appropriate RNDIS driver. The one from ACER is reported to be "the best".

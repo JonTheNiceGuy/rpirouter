@@ -1,0 +1,27 @@
+---
+- name: Setup Config File for dwc2
+  lineinfile:
+    line: "dtoverlay=dwc2"
+    insertafter: "[all]"
+    path: "{{ item.key }}/config.txt"
+  loop: "{{ boot_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Setup Config File for GPU Memory
+  lineinfile:
+    line: "gpu_mem=1"
+    insertafter: "[all]"
+    path: "{{ item.key }}/config.txt"
+  loop: "{{ boot_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  
+- name: Setup Config File for Activity LEDs
+  lineinfile:
+    line: "dtparam=act_led_trigger=actpwr"
+    insertafter: "[all]"
+    path: "{{ item.key }}/config.txt"
+  loop: "{{ boot_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"

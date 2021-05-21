@@ -1,0 +1,40 @@
+---
+- name: Check required partitions are mounted
+  fail:
+    msg: |-
+      {%- if parent_disk | length == 0 -%}
+        It appears your Pi SD Card is not mounted.
+      {%- else -%}
+        Your {% if root_volume | length == 0 %}Root {% if boot_volume | length == 0 %}and {% endif %}{% endif %}{% if boot_volume | length == 0 %}Boot {% endif %}volume{% if boot_volume | length == 0 and root_volume | length == 0 %}s are{% else %} is{% endif %} not mounted.
+      {%- endif %} Please check and try again.
+  when: boot_volume | length == 0 or root_volume | length == 0
+
+- name: Debug
+  debug:
+    msg: "{{ parent_disk }} = {{ boot_volume }} / {{ root_volume }}"
+
+- name: Setup config.txt
+  include_tasks: 1.config.yml
+
+- name: Setup SSH
+  include_tasks: 2.ssh.yml
+
+- name: Setup WPA Supplicant
+  include_tasks: 3.wpa_supplicant.yml
+
+- name: Setup libComposite
+  include_tasks: 4a.libComposite.yml
+  when: use_libComposite | default(true) | bool
+
+- name: Setup g_ether
+  include_tasks: 4b.g_ether.yml
+  when: use_libComposite | default(true) | bool == false
+
+- name: Setup USB0/1 interfaces
+  include_tasks: 5.interface.yml
+
+- name: Setup DNSMasq
+  include_tasks: 6.dnsmasq.yml
+
+- name: Setup Password
+  include_tasks: 7.password.yml

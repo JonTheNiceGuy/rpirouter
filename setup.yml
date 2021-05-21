@@ -1,0 +1,7 @@
+---
+- name: Run setup
+  hosts: localhost
+  tasks:
+  - name: Run rpirouter
+    include_role:
+      name: jontheniceguy.rpirouter

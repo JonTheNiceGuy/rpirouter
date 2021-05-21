@@ -1,0 +1,11 @@
+[Unit]
+Description=Install Required Packages
+ConditionPathExists=/root/packages
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c "/opt/installPackages.sh && [ -x /root/package_postinstall ] && /root/package_postinstall && rm -f /root/package_postinstall"
+
+[Install]
+WantedBy=multi-user.target

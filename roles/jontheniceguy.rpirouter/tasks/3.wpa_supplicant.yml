@@ -1,0 +1,9 @@
+---
+- name: Create WPA_Supplicant File
+  become: true
+  template:
+    src: wpa_supplicant.conf.j2
+    dest: "{{ item.key }}/wpa_supplicant.conf"
+  loop: "{{ boot_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"

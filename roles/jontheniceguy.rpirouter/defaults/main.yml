@@ -1,0 +1,21 @@
+---
+# Inter-Networking Supernet (198.18.0.0/15) RFC2544
+usb0_interface_cidr: "192.0.2.0/29"
+usb1_interface_cidr: "192.0.2.8/29"
+
+# Wifi Settings
+wifi_country: "GB"
+wifi:
+  example:
+    psk: abc123def456
+  "quoted example":
+  low_priority:
+    psk: 123456
+    priority: -999
+  named:
+    psk: abc123
+    id: Some named SSID
+
+# Hostname & FQDN
+hostname: pi
+dns_name: pirouter

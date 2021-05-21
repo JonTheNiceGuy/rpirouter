@@ -1,0 +1,13 @@
+interface=usb0
+bind-interfaces
+no-hosts
+dhcp-option=3
+log-dhcp
+expand-hosts
+dhcp-range=interface:usb0,{{ usb0_interface_dhcp_start }},{{ usb0_interface_dhcp_end }},2h
+dhcp-option=option:domain-name,{{ dns_name }}
+
+{% if use_libComposite | default(true) | bool %}
+interface=usb1
+dhcp-range=interface:usb1,{{ usb1_interface_dhcp_start }},{{ usb1_interface_dhcp_end }},2h
+{% endif %}

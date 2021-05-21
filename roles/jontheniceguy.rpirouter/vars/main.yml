@@ -1,0 +1,54 @@
+---
+parent_disk: |-
+  {
+    {%- if use_disk is defined -%}
+      '{{ use_disk }}': {'boot': '{{ use_disk }}1', 'root': '{{ use_disk }}2'}
+    {%- else -%}
+      {%- set ns = namespace() -%}
+      {%- for device in ansible_devices | dict2items -%}
+        {%- set ns.root = "" -%}
+        {%- set ns.boot = "" -%}
+        {%- for partition in device.value.partitions | dict2items -%}
+          {%- if (( partition.value.links | default({}) ).labels | default([]) )[0] | default('') == "boot" -%}
+            {%- set ns.boot = partition.key -%}
+          {%- endif -%}
+          {%- if (( partition.value.links | default({}) ).labels | default([]) )[0] | default('') == "rootfs" -%}
+            {%- set ns.root = partition.key -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- if ns.boot | length > 0 and ns.root | length > 0 -%}
+          "/dev/{{ device.key }}": {"boot": "/dev/{{ ns.boot }}", "root": "/dev/{{ ns.root }}"},
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+  }
+root_volume: |-
+  {
+    {%- for mount in ansible_mounts -%}
+      {%- for disk in parent_disk | dict2items -%}
+        {%- if mount.device == disk.value.root -%}
+          "{{ mount.mount }}": "{{ disk.key }}",
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endfor -%}
+  }
+boot_volume: |-
+  {
+    {%- for mount in ansible_mounts -%}
+      {%- for disk in parent_disk | dict2items -%}
+        {%- if mount.device == disk.value.boot -%}
+          "{{ mount.mount }}": "{{ disk.key }}",
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endfor -%}
+  }
+usb0_interface_router: "{{ usb0_interface_cidr | ansible.netcommon.ipaddr('net') | ansible.netcommon.ipaddr('1') | ansible.netcommon.ipaddr('address') }}"
+usb0_interface_dhcp_start: "{{ usb0_interface_cidr | ansible.netcommon.ipaddr('net') | ansible.netcommon.ipaddr('2') | ansible.netcommon.ipaddr('address') }}"
+usb0_interface_dhcp_end: "{{ usb0_interface_cidr | ansible.netcommon.ipaddr('net') | ansible.netcommon.ipaddr('3') | ansible.netcommon.ipaddr('address') }}"
+usb0_interface_netmask: "{{ usb0_interface_cidr | ansible.netcommon.ipaddr('netmask') }}"
+usb1_interface_router: "{{ usb1_interface_cidr | ansible.netcommon.ipaddr('net') | ansible.netcommon.ipaddr('1') | ansible.netcommon.ipaddr('address') }}"
+usb1_interface_dhcp_start: "{{ usb1_interface_cidr | ansible.netcommon.ipaddr('net') | ansible.netcommon.ipaddr('2') | ansible.netcommon.ipaddr('address') }}"
+usb1_interface_dhcp_end: "{{ usb1_interface_cidr | ansible.netcommon.ipaddr('net') | ansible.netcommon.ipaddr('3') | ansible.netcommon.ipaddr('address') }}"
+usb1_interface_netmask: "{{ usb1_interface_cidr | ansible.netcommon.ipaddr('netmask') }}"
+generated_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits,._-/') }}"
+_password: "{{ password | default(generated_password) }}"

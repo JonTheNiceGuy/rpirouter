@@ -1,0 +1,5 @@
+ENABLED=1
+CONFIG_DIR=/etc/dnsmasq.d,.dpkg-dist,.dpkg-old,.dpkg-new
+IGNORE_RESOLVCONF=yes
+DNSMASQ_EXCEPT=lo
+

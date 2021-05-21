@@ -1,0 +1,78 @@
+---
+- name: Create details for USB0 interface
+  copy:
+    content: |
+      allow-hotplug usb0
+      iface usb0 inet static
+        address {{ usb0_interface_router }}
+        netmask {{ usb0_interface_netmask }}
+    dest: "{{ item.key }}/etc/network/interfaces.d/usb0"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Create details for USB1 interface
+  copy:
+    content: |
+      allow-hotplug usb1
+      iface usb1 inet static
+        address {{ usb1_interface_router }}
+        netmask {{ usb1_interface_netmask }}
+    dest: "{{ item.key }}/etc/network/interfaces.d/usb1"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: use_libComposite | default(true) | bool
+
+- name: Update hosts file with hostname
+  lineinfile:
+    path: "{{ item.key }}/etc/hosts"
+    regexp: '^127\.0\.1\.1\s+\S+\s*$'
+    line: "127.0.1.1 {{ hostname }}.{{ dns_name }} {{ hostname }}"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Update hosts file with hostname for usb0
+  lineinfile:
+    path: "{{ item.key }}/etc/hosts"
+    line: "{{ usb0_interface_router }} {{ hostname }}.{{ dns_name }} {{ hostname }}"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Update hosts file with hostname for usb1
+  lineinfile:
+    path: "{{ item.key }}/etc/hosts"
+    line: "{{ usb1_interface_router }} {{ hostname }}.{{ dns_name }} {{ hostname }}"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: use_libComposite | default(true) | bool
+
+- name: Update hostname file
+  lineinfile:
+    path: "{{ item.key }}/etc/hostname"
+    regexp: '^.*$'
+    line: "{{ hostname }}.{{ dns_name }}"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"

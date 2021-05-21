@@ -1,0 +1,35 @@
+---
+- name: Configure SSHd to start on boot
+  become: true
+  copy:
+    content: ""
+    dest: "{{ item.key }}/ssh"
+  loop: "{{ boot_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Create SSH directory
+  become: true
+  file:
+    dest: "{{ item.key }}/home/pi/.ssh"
+    state: directory
+    owner: "1000"
+    group: "1000"
+    mode: "0700"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: ssh_key is defined
+
+- name: Add SSH keys to pi user
+  become: true
+  copy:
+    content: "{{ ssh_key }}"
+    dest: "{{ item.key }}/home/pi/.ssh/authorized_keys"
+    owner: "1000"
+    group: "1000"
+    mode: "0600"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: ssh_key is defined

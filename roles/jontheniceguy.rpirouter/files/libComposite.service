@@ -1,0 +1,9 @@
+[Unit]
+Description=Start libComposite
+
+[Service]
+Type=oneshot
+ExecStart=/opt/lib_composite.sh
+
+[Install]
+WantedBy=multi-user.target

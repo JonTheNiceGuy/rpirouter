@@ -1,0 +1,36 @@
+---
+- name: Copy libComposite.sh file
+  become: true
+  copy:
+    src: libComposite.sh
+    dest: "{{ item.key }}/opt/lib_composite.sh"
+    owner: root
+    group: root
+    mode: "0700"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Copy libComposite.service file
+  become: true
+  copy:
+    src: libComposite.service
+    dest: "{{ item.key }}/lib/systemd/system/libComposite.service"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Configure libComposite to start on boot
+  become: true
+  file:
+    src: "/lib/systemd/system/libComposite.service"
+    dest: "{{ item.key }}/etc/systemd/system/multi-user.target.wants/libComposite.service"
+    force: yes
+    follow: false
+    state: link
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"

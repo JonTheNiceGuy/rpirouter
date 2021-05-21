@@ -1,0 +1,83 @@
+---
+- name: Setup DNSMasq
+  template:
+    src: dnsmasq.conf.j2
+    dest: "{{ item.key }}/etc/dnsmasq.conf"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Configure Packages to install on next boot
+  become: true
+  copy:
+    content: "dnsmasq"
+    dest: "{{ item.key }}/root/packages"
+    owner: "0"
+    group: "0"
+    mode: "0600"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Copy installPackages.sh file
+  become: true
+  copy:
+    src: installPackages.sh
+    dest: "{{ item.key }}/opt/installPackages.sh"
+    owner: root
+    group: root
+    mode: "0700"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Copy installPackages.service file
+  become: true
+  copy:
+    src: installPackages.service
+    dest: "{{ item.key }}/lib/systemd/system/installPackages.service"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Configure installPackages to start on boot
+  become: true
+  file:
+    src: "/lib/systemd/system/installPackages.service"
+    dest: "{{ item.key }}/etc/systemd/system/multi-user.target.wants/installPackages.service"
+    force: yes
+    follow: false
+    state: link
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Configure DNSMasq Default File
+  become: true
+  copy:
+    src: dnsmasq
+    dest: "{{ item.key }}/etc/default/dnsmasq"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Configure Package Postinstall File
+  become: true
+  template:
+    src: package_postinstall.sh.j2
+    dest: "{{ item.key }}/root/package_postinstall"
+    owner: "0"
+    group: "0"
+    mode: "0700"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
