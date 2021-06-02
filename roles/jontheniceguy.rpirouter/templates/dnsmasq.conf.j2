@@ -8,7 +8,18 @@ no-resolv
 # DHCP for USB0
 interface=usb0
 dhcp-range=usb0,{{ usb0_interface_dhcp_start }},{{ usb0_interface_dhcp_end }},2h
+dhcp-option=usb0,option:domain-name,{{ dns_name }}
 dhcp-option=usb0,option:router{% if use_as_default_route | default(false) | bool %},{{ usb0_interface_router }}{% endif %}
+
+{% if defined_routes is not string and defined_routes is not mapping and defined_routes is iterable %}
+{% for route in defined_routes %}
+dhcp-option=usb0,option:classless-static-route,{{ route }},{{ usb0_interface_router }}
+{% endfor %}
+{% elif defined_routes is not string and defined_routes is mapping %}
+{% for route in defined_routes | dict2items %}
+dhcp-option=usb0,option:classless-static-route,{{ route.key }},{{ route.value.usb0 | default(route.value.gw | default(usb0_interface_router)) }}
+{% endfor %}
+{% endif %}
 
 {% if use_libComposite | default(true) | bool %}
 # DHCP for USB1
@@ -16,7 +27,30 @@ interface=usb1
 dhcp-range=usb1,{{ usb1_interface_dhcp_start }},{{ usb1_interface_dhcp_end }},2h
 dhcp-option=usb1,option:router{% if use_as_default_route | default(false) | bool %},{{ usb1_interface_router }}{% endif %}
 
+{% if defined_routes is not string and defined_routes is not mapping and defined_routes is iterable %}
+{% for route in defined_routes %}
+dhcp-option=usb1,option:classless-static-route,{{ route }},{{ usb1_interface_router }}
+{% endfor %}
+{% elif defined_routes is not string and defined_routes is mapping %}
+{% for route in defined_routes | dict2items %}
+dhcp-option=usb1,option:classless-static-route,{{ route.key }},{{ route.value.usb1 | default(route.value.gw | default(usb1_interface_router)) }}
+{% endfor %}
+{% endif %}
 {% endif %}
 
 # DNS
-dhcp-option=option:domain-name,{{ dns_name }}
+{% if dns_servers is not string and dns_servers is not mapping and dns_servers is iterable %}
+{% for item in dns_servers %}
+server={{ item }}
+
+{% endfor %}
+{% elif dns_servers is not string and dns_servers is mapping %}
+{% for item in dns_servers | dict2items %}
+server={{ item.key }}{% if item.value.port is defined %}#{{ item.value.port }}{% endif %}
+
+{% if item.value.reverse is defined %}
+rev-server={{ item.value.reverse }},{{ item.key }}{% if item.value.port is defined %}#{{ item.value.port }}{% endif %}
+{% endif %}
+
+{% endfor %}
+{% endif %}

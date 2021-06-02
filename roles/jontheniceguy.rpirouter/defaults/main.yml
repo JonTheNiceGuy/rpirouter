@@ -19,3 +19,27 @@ wifi:
 # Hostname & FQDN
 hostname: pi
 dns_name: pirouter
+
+dns_server: ""
+dns_servers: |
+  [
+    {% if dns_server is string and dns_server | length > 0 %}
+      {'{{ dns_server }}': {} }
+    {% endif %}
+  ]
+
+defined_route: ""
+defined_routes: |
+  [
+    {% if defined_route is string and defined_route | length > 0 %}
+      '{{ defined_route }}'
+    {% endif %}
+  ]
+
+iptables_nats:
+- in: usb0
+- in: usb1
+
+iptables_rules:
+- port: 22
+  protocol: tcp

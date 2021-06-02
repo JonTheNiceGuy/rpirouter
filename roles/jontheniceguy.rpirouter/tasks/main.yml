@@ -42,6 +42,13 @@
 - name: Setup Password
   include_tasks: 7.password.yml
 
+- name: Setup IPv4 Routing Forwarding
+  include_tasks: 8.routing and forwarding.yml
+  when: |
+    use_as_default_route | default(false) | bool or
+    (defined_routes is not string and defined_routes is not mapping and defined_routes is iterable) or
+    (defined_routes is not string and defined_routes is mapping)
+
 - name: Output password
   debug:
     msg: "Password: {{ _password }}"

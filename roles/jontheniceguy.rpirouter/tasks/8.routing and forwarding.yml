@@ -1,0 +1,63 @@
+---
+- name: Setup sysctl for IPv4 Forwarding
+  lineinfile:
+    regexp: '^[#]?\s*net.ipv4.ip_forward=.\s*$'
+    line: 'net.ipv4.ip_forward=1'
+    path: "{{ item.key }}/etc/sysctl.conf"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Configure Packages to install on next boot
+  become: true
+  lineinfile:
+    line: "iptables-persistent"
+    path: "{{ item.key }}/root/packages"
+    owner: "0"
+    group: "0"
+    mode: "0600"
+    create: yes
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Make IPTables Rules directory
+  file:
+    path: "{{ item.key }}/etc/iptables"
+    state: directory
+    owner: "0"
+    group: "0"
+    mode: "0755"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+# Rules based on https://tldp.org/HOWTO/html_single/Masquerading-Simple-HOWTO/
+- name: Setup IPTables Rules
+  template:
+    src: rules.v4.j2
+    dest: "{{ item.key }}/etc/iptables/rules.v4"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Configure Package Preinstall File
+  become: true
+  blockinfile:
+    path: "{{ item.key }}/root/package_preinstall"
+    insertafter: "set -x"
+    marker: "### ANSIBLE MANAGED BLOCK - iptables-persistent"
+    block: |
+      (
+        echo iptables-persistent     iptables-persistent/autosave_v4 boolean false
+        echo iptables-persistent     iptables-persistent/autosave_v6 boolean false
+      ) | debconf-set-selections
+    owner: "0"
+    group: "0"
+    mode: "0700"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
