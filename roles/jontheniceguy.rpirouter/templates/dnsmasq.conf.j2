@@ -8,7 +8,6 @@ no-resolv
 # DHCP for USB0
 interface=usb0
 dhcp-range=usb0,{{ usb0_interface_dhcp_start }},{{ usb0_interface_dhcp_end }},2h
-dhcp-option=usb0,option:domain-name,{{ dns_name }}
 dhcp-option=usb0,option:router{% if use_as_default_route | default(false) | bool %},{{ usb0_interface_router }}{% endif %}
 
 {% if defined_routes is not string and defined_routes is not mapping and defined_routes is iterable %}
@@ -39,6 +38,7 @@ dhcp-option=usb1,option:classless-static-route,{{ route.key }},{{ route.value.us
 {% endif %}
 
 # DNS
+dhcp-option=option:domain-name,{{ dns_name }}
 {% if dns_servers is not string and dns_servers is not mapping and dns_servers is iterable %}
 {% for item in dns_servers %}
 server={{ item }}
