@@ -1,15 +1,22 @@
-interface=usb0
+# General options
 bind-interfaces
 no-hosts
 log-dhcp
 expand-hosts
-dhcp-option=option:domain-name,{{ dns_name }}
+no-resolv
 
+# DHCP for USB0
+interface=usb0
 dhcp-range=usb0,{{ usb0_interface_dhcp_start }},{{ usb0_interface_dhcp_end }},2h
 dhcp-option=usb0,option:router{% if use_as_default_route | default(false) | bool %},{{ usb0_interface_router }}{% endif %}
 
 {% if use_libComposite | default(true) | bool %}
+# DHCP for USB1
 interface=usb1
 dhcp-range=usb1,{{ usb1_interface_dhcp_start }},{{ usb1_interface_dhcp_end }},2h
 dhcp-option=usb1,option:router{% if use_as_default_route | default(false) | bool %},{{ usb1_interface_router }}{% endif %}
+
 {% endif %}
+
+# DNS
+dhcp-option=option:domain-name,{{ dns_name }}

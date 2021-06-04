@@ -1,0 +1,62 @@
+---
+- name: Copy installPackages.sh file
+  become: true
+  copy:
+    src: installPackages.sh
+    dest: "{{ item.key }}/opt/installPackages.sh"
+    owner: root
+    group: root
+    mode: "0700"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Copy installPackages.service file
+  become: true
+  copy:
+    src: installPackages.service
+    dest: "{{ item.key }}/lib/systemd/system/installPackages.service"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Configure installPackages to start on boot
+  become: true
+  file:
+    src: "/lib/systemd/system/installPackages.service"
+    dest: "{{ item.key }}/etc/systemd/system/multi-user.target.wants/installPackages.service"
+    force: yes
+    follow: false
+    state: link
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Create package_preinstall.sh
+  copy:
+    dest: "{{ item.key }}/root/package_preinstall"
+    content: |
+      #!/bin/bash
+      set -x
+    owner: "0"
+    group: "0"
+    mode: "0700"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Create package_postinstall.sh
+  copy:
+    dest: "{{ item.key }}/root/package_postinstall"
+    content: |
+      #!/bin/bash
+      set -x
+    owner: "0"
+    group: "0"
+    mode: "0700"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"

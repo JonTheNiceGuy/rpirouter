@@ -1,4 +1,17 @@
 ---
+- name: Configure Packages to install on next boot
+  become: true
+  lineinfile:
+    line: "dnsmasq"
+    path: "{{ item.key }}/root/packages"
+    owner: "0"
+    group: "0"
+    mode: "0600"
+    create: yes
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
 - name: Setup DNSMasq
   template:
     src: dnsmasq.conf.j2
@@ -6,54 +19,6 @@
     owner: "0"
     group: "0"
     mode: "0644"
-  loop: "{{ root_volume | dict2items }}"
-  loop_control:
-    label: "{{ item.value }}"
-
-- name: Configure Packages to install on next boot
-  become: true
-  copy:
-    content: "dnsmasq"
-    dest: "{{ item.key }}/root/packages"
-    owner: "0"
-    group: "0"
-    mode: "0600"
-  loop: "{{ root_volume | dict2items }}"
-  loop_control:
-    label: "{{ item.value }}"
-
-- name: Copy installPackages.sh file
-  become: true
-  copy:
-    src: installPackages.sh
-    dest: "{{ item.key }}/opt/installPackages.sh"
-    owner: root
-    group: root
-    mode: "0700"
-  loop: "{{ root_volume | dict2items }}"
-  loop_control:
-    label: "{{ item.value }}"
-
-- name: Copy installPackages.service file
-  become: true
-  copy:
-    src: installPackages.service
-    dest: "{{ item.key }}/lib/systemd/system/installPackages.service"
-    owner: root
-    group: root
-    mode: "0644"
-  loop: "{{ root_volume | dict2items }}"
-  loop_control:
-    label: "{{ item.value }}"
-
-- name: Configure installPackages to start on boot
-  become: true
-  file:
-    src: "/lib/systemd/system/installPackages.service"
-    dest: "{{ item.key }}/etc/systemd/system/multi-user.target.wants/installPackages.service"
-    force: yes
-    follow: false
-    state: link
   loop: "{{ root_volume | dict2items }}"
   loop_control:
     label: "{{ item.value }}"
@@ -72,9 +37,16 @@
 
 - name: Configure Package Postinstall File
   become: true
-  template:
-    src: package_postinstall.sh.j2
-    dest: "{{ item.key }}/root/package_postinstall"
+  blockinfile:
+    path: "{{ item.key }}/root/package_postinstall"
+    insertafter: "set -x"
+    marker: "### ANSIBLE MANAGED BLOCK - dnsmasq"
+    block: |
+      systemctl disable --now dnsmasq
+      mv /etc/init.d/dnsmasq /etc/init.d/dnsmasq.initd
+      sed /lib/systemd/system/dnsmasq.service -i -e "s/Requires=network.target/Requires=network.target sys-subsystem-net-devices-usb0.device{% if use_libComposite | default(true) | bool %} sys-subsystem-net-devices-usb1.device{% endif %}/" -e "s~/etc/init.d/dnsmasq ~/etc/init.d/dnsmasq.initd ~g" -e 's/Type=forking/Type=forking\nRestart=on-failure\nRestartSec=3/'
+      systemctl daemon-reload
+      systemctl enable --now dnsmasq.service
     owner: "0"
     group: "0"
     mode: "0700"

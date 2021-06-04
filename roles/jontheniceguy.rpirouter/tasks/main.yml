@@ -13,6 +13,9 @@
   debug:
     msg: "{{ parent_disk }} = {{ boot_volume }} / {{ root_volume }}"
 
+- name: Setup Packages
+  include_tasks: 0.packages.yml
+
 - name: Setup config.txt
   include_tasks: 1.config.yml
 
@@ -38,3 +41,8 @@
 
 - name: Setup Password
   include_tasks: 7.password.yml
+
+- name: Output password
+  debug:
+    msg: "Password: {{ _password }}"
+  when: _password == generated_password
