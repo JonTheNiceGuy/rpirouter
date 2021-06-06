@@ -3,9 +3,16 @@
   copy:
     content: |
       allow-hotplug usb0
+      {% if usb0_interface_cidr | length > 0 %}
       iface usb0 inet static
         address {{ usb0_interface_router }}
         netmask {{ usb0_interface_netmask }}
+      {% endif %}
+      {% if usb0_interface_cidr6 | length > 0 %}
+      iface usb0 inet6 static
+        address {{ usb0_interface_router6 }}
+        netmask {{ usb0_interface_netmask6 }}
+      {% endif %}
     dest: "{{ item.key }}/etc/network/interfaces.d/usb0"
     owner: "0"
     group: "0"
@@ -18,9 +25,16 @@
   copy:
     content: |
       allow-hotplug usb1
+      {% if usb1_interface_cidr | length > 0 %}
       iface usb1 inet static
         address {{ usb1_interface_router }}
         netmask {{ usb1_interface_netmask }}
+      {% endif %}
+      {% if usb1_interface_cidr6 | length > 0 %}
+      iface usb1 inet6 static
+        address {{ usb1_interface_router6 }}
+        netmask {{ usb1_interface_netmask6 }}
+      {% endif %}
     dest: "{{ item.key }}/etc/network/interfaces.d/usb1"
     owner: "0"
     group: "0"
@@ -49,6 +63,19 @@
     owner: "0"
     group: "0"
     mode: "0644"
+  when: usb0_interface_cidr | length > 0
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+
+- name: Update hosts file with hostname for usb0-ipv6
+  lineinfile:
+    path: "{{ item.key }}/etc/hosts"
+    line: "{{ usb0_interface_router6 }} {{ hostname }}.{{ dns_name }} {{ hostname }}"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  when: usb0_interface_cidr6 | length > 0
   loop: "{{ root_volume | dict2items }}"
   loop_control:
     label: "{{ item.value }}"
@@ -63,7 +90,23 @@
   loop: "{{ root_volume | dict2items }}"
   loop_control:
     label: "{{ item.value }}"
-  when: use_libComposite | default(true) | bool
+  when: 
+  - use_libComposite | default(true) | bool
+  - usb1_interface_cidr | length > 0
+
+- name: Update hosts file with hostname for usb1-ipv6
+  lineinfile:
+    path: "{{ item.key }}/etc/hosts"
+    line: "{{ usb1_interface_router6 }} {{ hostname }}.{{ dns_name }} {{ hostname }}"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: 
+  - use_libComposite | default(true) | bool
+  - usb1_interface_cidr6 | length > 0
 
 - name: Update hostname file
   lineinfile:
