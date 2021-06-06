@@ -1,7 +1,10 @@
 ---
-# Inter-Networking Supernet (198.18.0.0/15) RFC2544
+# TEST-NET-1 (192.0.2.0/24) RFC2544
 usb0_interface_cidr: "192.0.2.0/29"
 usb1_interface_cidr: "192.0.2.8/29"
+# IPv6 Address Prefix for Documentation (2001:db8::/32) RFC3849
+usb0_interface_cidr6: "" # "2001:0db8:0:0:0::0/64" # First /64
+usb1_interface_cidr6: "" # "2001:0db8:0:0:1::0/64" # Second /64
 
 # Wifi Settings
 wifi_country: "GB"

@@ -4,16 +4,29 @@ no-hosts
 log-dhcp
 expand-hosts
 no-resolv
+{% if usb0_interface_cidr6 | length > 0 or usb1_interface_cidr6 | length > 0 %}
+enable-ra
+{% endif %}
 
 # DHCP for USB0
 interface=usb0
+{% if usb0_interface_cidr | length > 0 %}
 dhcp-range=usb0,{{ usb0_interface_dhcp_start }},{{ usb0_interface_dhcp_end }},2h
+{% endif %}
+{% if usb0_interface_cidr6 | length > 0 %}
+dhcp-range=usb0,::2,::FFFF:FFFF:FFFF:FFFF,constructor:usb0,ra-names,2h
+{% endif %}
 dhcp-option=usb0,option:router{% if use_as_default_route | default(false) | bool %},{{ usb0_interface_router }}{% endif %}
 
 {% if use_libComposite | default(true) | bool %}
 # DHCP for USB1
 interface=usb1
+{% if usb1_interface_cidr | length > 0 %}
 dhcp-range=usb1,{{ usb1_interface_dhcp_start }},{{ usb1_interface_dhcp_end }},2h
+{% endif %}
+{% if usb1_interface_cidr6 | length > 0 %}
+dhcp-range=usb1,::2,::FFFF:FFFF:FFFF:FFFF,constructor:usb1,ra-names,2h
+{% endif %}
 dhcp-option=usb1,option:router{% if use_as_default_route | default(false) | bool %},{{ usb1_interface_router }}{% endif %}
 
 {% endif %}
