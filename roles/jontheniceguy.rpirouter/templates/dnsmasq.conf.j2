@@ -22,15 +22,11 @@ dhcp-option=br0,option:router{% if use_as_default_route  | bool %},{{ usb0_inter
 interface=usb0
 {% if usb0_interface_cidr | length > 0 %}
 dhcp-range=usb0,{{ usb0_interface_dhcp_start }},{{ usb0_interface_dhcp_end }},2h
-<<<<<<< HEAD
 dhcp-option=usb0,option:router{% if use_as_default_route  | bool %},{{ usb0_interface_router }}{% endif %}
 {% endif %}
 {% if usb0_interface_cidr6 | length > 0 %}
 dhcp-range=usb0,::2,::FFFF:FFFF:FFFF:FFFF,constructor:usb0,ra-names,2h
 {% endif %}
-=======
-dhcp-option=usb0,option:router{% if use_as_default_route | default(false) | bool %},{{ usb0_interface_router }}{% endif %}
->>>>>>> Fixing misplaced dhcp-option for DNS
 
 {% if defined_routes is not string and defined_routes is not mapping and defined_routes is iterable %}
 {% for route in defined_routes %}
@@ -67,10 +63,6 @@ dhcp-option=usb1,option:classless-static-route,{{ route.key }},{{ route.value.us
 {% endif %}
 # DNS
 dhcp-option=option:domain-name,{{ dns_name }}
-<<<<<<< HEAD
-
-=======
->>>>>>> Fixing misplaced dhcp-option for DNS
 {% if dns_servers is not string and dns_servers is not mapping and dns_servers is iterable %}
 {% for item in dns_servers %}
 server={{ item }}
