@@ -64,6 +64,10 @@ do
   echo "250"                       > "${this}/configs/c.${i}/MaxPower"     # 250mA
 done
 
+# Add the Serial interface
+mkdir -p "${this}/functions/acm.usb0"
+ln -s "${this}/functions/acm.usb0"   "${this}/configs/c.1/"
+
 # Set up the ECM/CDC function
 mkdir -p "${this}/functions/ecm.usb0"
 echo "${ecm_mac_address_host}"     > "${this}/functions/ecm.usb0/host_addr"
@@ -83,3 +87,5 @@ ln -s "${this}/functions/rndis.usb0" "${this}/configs/c.2/"
 
 udevadm settle -t 5 || true
 ls /sys/class/udc > "${this}/UDC"
+
+systemctl start getty@ttyGS0.service
