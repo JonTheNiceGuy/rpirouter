@@ -14,14 +14,14 @@
     label: "{{ item.value }}"
   when: create_bridge | bool
 
-- name: Create usb0.network -> br0
+- name: Create usb.network -> br0
   copy:
     content: |
       [Match]
-      Name=usb0
+      Name=usb*
       [Network]
       Bridge=br0
-    dest: "{{ item.key }}/etc/systemd/network/usb0.network"
+    dest: "{{ item.key }}/etc/systemd/network/usb.network"
     owner: "0"
     group: "0"
     mode: "0644"
@@ -37,10 +37,10 @@
       Name=usb0
       [Network]
       {% if usb0_interface_cidr | length > 0 %}
-      address {{ usb0_interface_router }}/{{ usb0_interface_prefix }}
+      Address={{ usb0_interface_router }}/{{ usb0_interface_prefix }}
       {% endif %}
       {% if usb0_interface_cidr6 | length > 0 %}
-      address {{ usb0_interface_router6 }}/{{ usb0_interface_netmask6 }}
+      Address={{ usb0_interface_router6 }}/{{ usb0_interface_netmask6 }}
       {% endif %}
     dest: "{{ item.key }}/etc/systemd/network/usb0.network"
     owner: "0"
@@ -51,33 +51,17 @@
     label: "{{ item.value }}"
   when: not create_bridge | bool
 
-- name: Create usb1.network -> br0
+- name: Create usb1.network static
   copy:
     content: |
       [Match]
       Name=usb1
-      [Network]
-      Bridge=br0
-    dest: "{{ item.key }}/etc/systemd/network/usb1.network"
-    owner: "0"
-    group: "0"
-    mode: "0644"
-  loop: "{{ root_volume | dict2items }}"
-  loop_control:
-    label: "{{ item.value }}"
-  when: create_bridge | bool and use_libComposite | bool
-
-- name: Create usb1.network
-  copy:
-    content: |
-      [Match]
-      Name=usb1
-      [Network]
+      [Address]
       {% if usb1_interface_cidr | length > 0 %}
-      address {{ usb1_interface_router }}/{{ usb1_interface_prefix }}
+      Address={{ usb1_interface_router }}/{{ usb1_interface_prefix }}
       {% endif %}
       {% if usb1_interface_cidr6 | length > 0 %}
-      address {{ usb1_interface_router6 }}/{{ usb1_interface_netmask6 }}
+      Address={{ usb1_interface_router6 }}/{{ usb1_interface_netmask6 }}
       {% endif %}
     dest: "{{ item.key }}/etc/systemd/network/usb1.network"
     owner: "0"
@@ -95,10 +79,10 @@
       Name=br0
       [Network]
       {% if usb0_interface_cidr | length > 0 %}
-      address {{ usb0_interface_router }}/{{ usb0_interface_prefix }}
+      Address={{ usb0_interface_router }}/{{ usb0_interface_prefix }}
       {% endif %}
       {% if usb0_interface_cidr6 | length > 0 %}
-      address {{ usb0_interface_router6 }}/{{ usb0_interface_netmask6 }}
+      Address={{ usb0_interface_router6 }}/{{ usb0_interface_netmask6 }}
       {% endif %}
     dest: "{{ item.key }}/etc/systemd/network/br0.network"
     owner: "0"
