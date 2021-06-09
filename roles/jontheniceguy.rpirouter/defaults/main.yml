@@ -40,8 +40,8 @@ defined_routes: |
   ]
 
 iptables_nats:
-- in: usb0
-- in: usb1
+- source: "{{ usb0_interface_cidr }}"
+- source: "{{ usb1_interface_cidr }}"
 
 iptables_rules:
 - port: 22
