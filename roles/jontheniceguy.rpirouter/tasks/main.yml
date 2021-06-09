@@ -27,11 +27,11 @@
 
 - name: Setup libComposite
   include_tasks: 4a.libComposite.yml
-  when: use_libComposite | default(true) | bool
+  when: use_libComposite | bool
 
 - name: Setup g_ether
   include_tasks: 4b.g_ether.yml
-  when: use_libComposite | default(true) | bool == false
+  when: use_libComposite | bool == false
 
 - name: Setup USB0/1 interfaces
   include_tasks: 5.interface.yml

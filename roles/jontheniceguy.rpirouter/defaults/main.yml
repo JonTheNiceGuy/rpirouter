@@ -22,3 +22,8 @@ wifi:
 # Hostname & FQDN
 hostname: pi
 dns_name: pirouter
+
+# Role Flags
+use_libComposite: true
+create_bridge: true
+use_as_default_route: false

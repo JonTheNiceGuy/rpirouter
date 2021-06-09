@@ -1,4 +1,31 @@
 ---
+- name: Configure Packages to install on next boot
+  become: true
+  lineinfile:
+    line: "bridge-utils"
+    path: "{{ item.key }}/root/packages"
+    owner: "0"
+    group: "0"
+    mode: "0600"
+    create: yes
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: create_bridge | bool
+
+- name: Configure bridge-utils
+  copy:
+    content: |
+      BRIDGE_HOTPLUG=yes
+    dest: "{{ item.key }}/etc/default/bridge-utils"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: not create_bridge | bool
+
 - name: Create details for USB0 interface
   copy:
     content: |
@@ -20,6 +47,7 @@
   loop: "{{ root_volume | dict2items }}"
   loop_control:
     label: "{{ item.value }}"
+  when: not create_bridge | bool
 
 - name: Create details for USB1 interface
   copy:
@@ -42,7 +70,39 @@
   loop: "{{ root_volume | dict2items }}"
   loop_control:
     label: "{{ item.value }}"
-  when: use_libComposite | default(true) | bool
+  when: use_libComposite | bool and not create_bridge | bool
+
+- name: Create details for USBx interface bridge
+  copy:
+    content: |
+      auto br0
+      iface usb0 inet manual
+      {% if use_libComposite | bool %}
+      iface usb1 inet manual
+      {% endif %}
+
+      {% if usb0_interface_cidr | length > 0 %}
+      iface br0 inet static
+        bridge_ports usb0 {% if use_libComposite | bool %}usb1{% endif %}
+
+        address {{ usb0_interface_router }}
+        netmask {{ usb0_interface_netmask }}
+      {% endif %}
+      {% if usb0_interface_cidr6 | length > 0 %}
+      iface br0 inet6 static
+        bridge_ports usb0 {% if use_libComposite | bool %}usb1{% endif %}
+
+        address {{ usb0_interface_router6 }}
+        netmask {{ usb0_interface_netmask6 }}
+      {% endif %}
+    dest: "{{ item.key }}/etc/network/interfaces.d/br0"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: create_bridge | bool
 
 - name: Update hosts file with hostname
   lineinfile:
@@ -91,8 +151,9 @@
   loop_control:
     label: "{{ item.value }}"
   when: 
-  - use_libComposite | default(true) | bool
+  - use_libComposite | bool
   - usb1_interface_cidr | length > 0
+  - not create_bridge | bool
 
 - name: Update hosts file with hostname for usb1-ipv6
   lineinfile:
@@ -105,8 +166,9 @@
   loop_control:
     label: "{{ item.value }}"
   when: 
-  - use_libComposite | default(true) | bool
+  - use_libComposite | bool
   - usb1_interface_cidr6 | length > 0
+  - not create_bridge | bool
 
 - name: Update hostname file
   lineinfile:

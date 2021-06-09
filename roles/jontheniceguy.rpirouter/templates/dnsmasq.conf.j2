@@ -7,6 +7,17 @@ no-resolv
 {% if usb0_interface_cidr6 | length > 0 or usb1_interface_cidr6 | length > 0 %}
 enable-ra
 {% endif %}
+{% if create_bridge | bool %}
+
+# DHCP for BR0
+interface=br0
+dhcp-range=br0,{{ usb0_interface_dhcp_start }},{{ usb0_interface_dhcp_end }},2h
+{% if usb0_interface_cidr6 | length > 0 %}
+dhcp-range=br0,::2,::FFFF:FFFF:FFFF:FFFF,constructor:br0,ra-names,2h
+{% endif %}
+dhcp-option=br0,option:router{% if use_as_default_route  | bool %},{{ usb0_interface_router }}{% endif %}
+
+{% else %}
 
 # DHCP for USB0
 interface=usb0
@@ -16,9 +27,9 @@ dhcp-range=usb0,{{ usb0_interface_dhcp_start }},{{ usb0_interface_dhcp_end }},2h
 {% if usb0_interface_cidr6 | length > 0 %}
 dhcp-range=usb0,::2,::FFFF:FFFF:FFFF:FFFF,constructor:usb0,ra-names,2h
 {% endif %}
-dhcp-option=usb0,option:router{% if use_as_default_route | default(false) | bool %},{{ usb0_interface_router }}{% endif %}
+dhcp-option=usb0,option:router{% if use_as_default_route  | bool %},{{ usb0_interface_router }}{% endif %}
 
-{% if use_libComposite | default(true) | bool %}
+{% if use_libComposite | bool %}
 # DHCP for USB1
 interface=usb1
 {% if usb1_interface_cidr | length > 0 %}
@@ -27,9 +38,10 @@ dhcp-range=usb1,{{ usb1_interface_dhcp_start }},{{ usb1_interface_dhcp_end }},2h
 {% if usb1_interface_cidr6 | length > 0 %}
 dhcp-range=usb1,::2,::FFFF:FFFF:FFFF:FFFF,constructor:usb1,ra-names,2h
 {% endif %}
-dhcp-option=usb1,option:router{% if use_as_default_route | default(false) | bool %},{{ usb1_interface_router }}{% endif %}
+dhcp-option=usb1,option:router{% if use_as_default_route  | bool %},{{ usb1_interface_router }}{% endif %}
 
 {% endif %}
 
+{% endif %}
 # DNS
 dhcp-option=option:domain-name,{{ dns_name }}
