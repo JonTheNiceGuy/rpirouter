@@ -1,0 +1,122 @@
+---
+- name: Create br0.netdev
+  copy:
+    content: |
+      [NetDev]
+      Name=br0
+      Kind=bridge
+    dest: "{{ item.key }}/etc/systemd/network/br0.netdev"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: create_bridge | bool
+
+- name: Create usb0.network -> br0
+  copy:
+    content: |
+      [Match]
+      Name=usb0
+      [Network]
+      Bridge=br0
+    dest: "{{ item.key }}/etc/systemd/network/usb0.network"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: create_bridge | bool
+
+- name: Create usb0.network static
+  copy:
+    content: |
+      [Match]
+      Name=usb0
+      [Network]
+      {% if usb0_interface_cidr | length > 0 %}
+      address {{ usb0_interface_router }}/{{ usb0_interface_prefix }}
+      {% endif %}
+      {% if usb0_interface_cidr6 | length > 0 %}
+      address {{ usb0_interface_router6 }}/{{ usb0_interface_netmask6 }}
+      {% endif %}
+    dest: "{{ item.key }}/etc/systemd/network/usb0.network"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: not create_bridge | bool
+
+- name: Create usb1.network -> br0
+  copy:
+    content: |
+      [Match]
+      Name=usb1
+      [Network]
+      Bridge=br0
+    dest: "{{ item.key }}/etc/systemd/network/usb1.network"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: create_bridge | bool and use_libComposite | bool
+
+- name: Create usb1.network
+  copy:
+    content: |
+      [Match]
+      Name=usb1
+      [Network]
+      {% if usb1_interface_cidr | length > 0 %}
+      address {{ usb1_interface_router }}/{{ usb1_interface_prefix }}
+      {% endif %}
+      {% if usb1_interface_cidr6 | length > 0 %}
+      address {{ usb1_interface_router6 }}/{{ usb1_interface_netmask6 }}
+      {% endif %}
+    dest: "{{ item.key }}/etc/systemd/network/usb1.network"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: not create_bridge | bool and use_libComposite | bool
+
+- name: Create br0.network
+  copy:
+    content: |
+      [Match]
+      Name=br0
+      [Network]
+      {% if usb0_interface_cidr | length > 0 %}
+      address {{ usb0_interface_router }}/{{ usb0_interface_prefix }}
+      {% endif %}
+      {% if usb0_interface_cidr6 | length > 0 %}
+      address {{ usb0_interface_router6 }}/{{ usb0_interface_netmask6 }}
+      {% endif %}
+    dest: "{{ item.key }}/etc/systemd/network/br0.network"
+    owner: "0"
+    group: "0"
+    mode: "0644"
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"
+  when: create_bridge | bool
+
+- name: Configure systemd-networkd to start on boot
+  become: true
+  file:
+    src: "/lib/systemd/system/systemd-networkd.service"
+    dest: "{{ item.key }}/etc/systemd/system/multi-user.target.wants/systemd-networkd.service"
+    force: yes
+    follow: false
+    state: link
+  loop: "{{ root_volume | dict2items }}"
+  loop_control:
+    label: "{{ item.value }}"

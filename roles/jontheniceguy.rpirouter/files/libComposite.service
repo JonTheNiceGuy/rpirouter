@@ -1,5 +1,6 @@
 [Unit]
 Description=Start libComposite
+Before=dnsmasq.Service
 
 [Service]
 Type=oneshot

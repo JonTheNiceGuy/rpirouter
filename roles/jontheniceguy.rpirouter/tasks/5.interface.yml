@@ -26,83 +26,13 @@
     label: "{{ item.value }}"
   when: not create_bridge | bool
 
-- name: Create details for USB0 interface
-  copy:
-    content: |
-      allow-hotplug usb0
-      {% if usb0_interface_cidr | length > 0 %}
-      iface usb0 inet static
-        address {{ usb0_interface_router }}
-        netmask {{ usb0_interface_netmask }}
-      {% endif %}
-      {% if usb0_interface_cidr6 | length > 0 %}
-      iface usb0 inet6 static
-        address {{ usb0_interface_router6 }}
-        netmask {{ usb0_interface_netmask6 }}
-      {% endif %}
-    dest: "{{ item.key }}/etc/network/interfaces.d/usb0"
-    owner: "0"
-    group: "0"
-    mode: "0644"
-  loop: "{{ root_volume | dict2items }}"
-  loop_control:
-    label: "{{ item.value }}"
-  when: not create_bridge | bool
+- name: Load interface.d style configuration
+  include_tasks: 5a.interface.d.yml
+  when: use_interface_d | bool
 
-- name: Create details for USB1 interface
-  copy:
-    content: |
-      allow-hotplug usb1
-      {% if usb1_interface_cidr | length > 0 %}
-      iface usb1 inet static
-        address {{ usb1_interface_router }}
-        netmask {{ usb1_interface_netmask }}
-      {% endif %}
-      {% if usb1_interface_cidr6 | length > 0 %}
-      iface usb1 inet6 static
-        address {{ usb1_interface_router6 }}
-        netmask {{ usb1_interface_netmask6 }}
-      {% endif %}
-    dest: "{{ item.key }}/etc/network/interfaces.d/usb1"
-    owner: "0"
-    group: "0"
-    mode: "0644"
-  loop: "{{ root_volume | dict2items }}"
-  loop_control:
-    label: "{{ item.value }}"
-  when: use_libComposite | bool and not create_bridge | bool
-
-- name: Create details for USBx interface bridge
-  copy:
-    content: |
-      auto br0
-      iface usb0 inet manual
-      {% if use_libComposite | bool %}
-      iface usb1 inet manual
-      {% endif %}
-
-      {% if usb0_interface_cidr | length > 0 %}
-      iface br0 inet static
-        bridge_ports usb0 {% if use_libComposite | bool %}usb1{% endif %}
-
-        address {{ usb0_interface_router }}
-        netmask {{ usb0_interface_netmask }}
-      {% endif %}
-      {% if usb0_interface_cidr6 | length > 0 %}
-      iface br0 inet6 static
-        bridge_ports usb0 {% if use_libComposite | bool %}usb1{% endif %}
-
-        address {{ usb0_interface_router6 }}
-        netmask {{ usb0_interface_netmask6 }}
-      {% endif %}
-    dest: "{{ item.key }}/etc/network/interfaces.d/br0"
-    owner: "0"
-    group: "0"
-    mode: "0644"
-  loop: "{{ root_volume | dict2items }}"
-  loop_control:
-    label: "{{ item.value }}"
-  when: create_bridge | bool
+- name: Load systemd-networkd style configuration
+  include_tasks: 5b.systemd-networkd.yml
+  when: not use_interface_d | bool
 
 - name: Update hosts file with hostname
   lineinfile:

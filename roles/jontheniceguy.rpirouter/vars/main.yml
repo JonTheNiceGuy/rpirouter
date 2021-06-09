@@ -47,6 +47,7 @@ usb0_interface_router: "{% if usb0_interface_cidr | length > 0 %}{{ usb0_interfa
 usb0_interface_dhcp_start: "{% if usb0_interface_cidr | length > 0 %}{{ usb0_interface_cidr | ansible.netcommon.ipaddr('net') | ansible.netcommon.ipaddr('2') | ansible.netcommon.ipaddr('address') }}{% endif %}"
 usb0_interface_dhcp_end: "{% if usb0_interface_cidr | length > 0 %}{{ usb0_interface_cidr | ansible.netcommon.ipaddr('net') | ansible.netcommon.ipaddr('3') | ansible.netcommon.ipaddr('address') }}{% endif %}"
 usb0_interface_netmask: "{% if usb0_interface_cidr | length > 0 %}{{ usb0_interface_cidr | ansible.netcommon.ipaddr('netmask') }}{% endif %}"
+usb0_interface_prefix: "{% if usb0_interface_cidr | length > 0 %}{{ usb0_interface_cidr | ansible.netcommon.ipaddr('prefix') }}{% endif %}"
 
 usb0_interface_router6: "{% if usb0_interface_cidr6 | length > 0 %}{{ usb0_interface_cidr6 | ansible.netcommon.ipaddr('net') | ansible.netcommon.ipaddr('1') | ansible.netcommon.ipaddr('address') }}{% endif %}"
 usb0_interface_netmask6: "{% if usb0_interface_cidr6 | length > 0 %}{{ usb0_interface_cidr6 | ansible.netcommon.ipaddr('netmask') }}{% endif %}"
@@ -55,6 +56,7 @@ usb1_interface_router: "{% if usb1_interface_cidr | length > 0 %}{{ usb1_interfa
 usb1_interface_dhcp_start: "{% if usb1_interface_cidr | length > 0 %}{{ usb1_interface_cidr | ansible.netcommon.ipaddr('net') | ansible.netcommon.ipaddr('2') | ansible.netcommon.ipaddr('address') }}{% endif %}"
 usb1_interface_dhcp_end: "{% if usb1_interface_cidr | length > 0 %}{{ usb1_interface_cidr | ansible.netcommon.ipaddr('net') | ansible.netcommon.ipaddr('3') | ansible.netcommon.ipaddr('address') }}{% endif %}"
 usb1_interface_netmask: "{% if usb1_interface_cidr | length > 0 %}{{ usb1_interface_cidr | ansible.netcommon.ipaddr('netmask') }}{% endif %}"
+usb1_interface_prefix: "{% if usb1_interface_cidr | length > 0 %}{{ usb1_interface_cidr | ansible.netcommon.ipaddr('prefix') }}{% endif %}"
 
 usb1_interface_router6: "{% if usb1_interface_cidr6 | length > 0 %}{{ usb1_interface_cidr6 | ansible.netcommon.ipaddr('net') | ansible.netcommon.ipaddr('1') | ansible.netcommon.ipaddr('address') }}{% endif %}"
 usb1_interface_netmask6: "{% if usb1_interface_cidr6 | length > 0 %}{{ usb1_interface_cidr6 | ansible.netcommon.ipaddr('netmask') }}{% endif %}"
