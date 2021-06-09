@@ -28,3 +28,29 @@ use_libComposite: true
 create_bridge: true
 use_as_default_route: false
 use_interface_d: false
+
+# DNSMasq Settings
+dns_server: ""
+dns_servers: |
+  [
+    {% if dns_server is string and dns_server | length > 0 %}
+      {'{{ dns_server }}': {} }
+    {% endif %}
+  ]
+
+defined_route: ""
+defined_routes: |
+  [
+    {% if defined_route is string and defined_route | length > 0 %}
+      '{{ defined_route }}'
+    {% endif %}
+  ]
+
+# IPTables Rules and Routes
+iptables_nats:
+- in: usb0
+- in: usb1
+
+iptables_rules:
+- port: 22
+  protocol: tcp
