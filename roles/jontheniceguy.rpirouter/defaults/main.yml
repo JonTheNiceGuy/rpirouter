@@ -25,5 +25,5 @@ dns_name: pirouter
 
 # Role Flags
 use_libComposite: true
-create_bridge: true
+create_bridge: false
 use_as_default_route: false
